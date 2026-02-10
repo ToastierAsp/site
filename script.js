@@ -100,33 +100,35 @@ document.addEventListener('DOMContentLoaded', ()=>{
 	(async ()=>{
 		console.debug('scripts.js: initializing passkey');
 		try{
-			const ip = await fetchPublicIP();
-			publicIP = ip || '';
-			let seed = publicIP;
-			if(!seed){
-				// fallback deterministic seed when public IP unavailable (e.g. GitHub Pages or blocked)
-				seed = (location.hostname && location.hostname !== '') ? location.hostname : (navigator.userAgent || 'unknown');
-			}
-			const hashed = await hashIP(seed);
-			console.debug('scripts.js: passkey hashed', hashed.slice(0,8));
-			if(globalPasskeyEl) globalPasskeyEl.textContent = hashed;
-			const yki = document.getElementById('yourKeyInput');
-			if(yki) yki.value = hashed;
-			if(passkeyBanner){
-				passkeyBanner.classList.remove('hidden');
-				console.debug('scripts.js: passkeyBanner shown');
-			}
-		}catch(err){
-			console.error('passkey init failed', err);
-			// final fallback: hash hostname/userAgent
-			try{
-				const seed = (location.hostname && location.hostname !== '') ? location.hostname : (navigator.userAgent || 'unknown');
-				const hashed = await hashIP(seed);
+				const ip = await fetchPublicIP();
+				publicIP = ip || '';
+				if(!publicIP){
+					console.warn('scripts.js: public IP unavailable — passkey disabled (no fallback)');
+					if(globalPasskeyEl) globalPasskeyEl.textContent = 'PASSKEY UNAVAILABLE';
+					const yki = document.getElementById('yourKeyInput');
+					if(yki) yki.value = '';
+					if(passkeyBanner){
+						passkeyBanner.classList.remove('hidden');
+						passkeyBanner.style.display = 'flex';
+					}
+					return;
+				}
+				const hashed = await hashIP(publicIP);
+				console.debug('scripts.js: passkey hashed', (hashed || '').slice(0,8));
 				if(globalPasskeyEl) globalPasskeyEl.textContent = hashed;
 				const yki = document.getElementById('yourKeyInput');
 				if(yki) yki.value = hashed;
-				if(passkeyBanner) passkeyBanner.classList.remove('hidden');
-			}catch(e){ console.error(e); }
+				if(passkeyBanner){
+					passkeyBanner.classList.remove('hidden');
+					passkeyBanner.style.display = 'flex';
+					console.debug('scripts.js: passkeyBanner shown');
+				}
+		}catch(err){
+				console.error('passkey init failed', err);
+				if(globalPasskeyEl) globalPasskeyEl.textContent = 'PASSKEY UNAVAILABLE';
+				const yki = document.getElementById('yourKeyInput');
+				if(yki) yki.value = '';
+				if(passkeyBanner){ passkeyBanner.classList.remove('hidden'); passkeyBanner.style.display='flex'; }
 		}
 	})();
 
