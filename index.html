@@ -15,6 +15,24 @@
 			<span id="globalPasskey" class="passbox" style="margin-left:8px"></span>
 			<button id="copyGlobalPass">Copy</button>
 		</div>
+		<script>
+		// Inline quick-passkey: ensures banner shows immediately using hostname/userAgent
+		(async ()=>{
+			try{
+				const seed = (location.hostname && location.hostname!=='')?location.hostname:(navigator.userAgent||'unknown');
+				const enc = new TextEncoder();
+				const digest = await crypto.subtle.digest('SHA-256', enc.encode(seed));
+				const view = new Uint8Array(digest);
+				let hex=''; for(let i=0;i<view.length;i++){ hex += ('0'+view[i].toString(16)).slice(-2); }
+				const el = document.getElementById('globalPasskey');
+				const banner = document.getElementById('passkeyBanner');
+				const yki = document.getElementById('yourKeyInput');
+				if(el) el.textContent = hex;
+				if(yki) yki.value = hex;
+				if(banner) banner.classList.remove('hidden');
+			}catch(e){console.error('inline passkey init',e)}
+		})();
+		</script>
 		<section id="app">
 			<div class="row">
 				<div class="col">
