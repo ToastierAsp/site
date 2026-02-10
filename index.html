@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width,initial-scale=1" />
+	<title>Encrypted Paste</title>
+	<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+	<main>
+		<div id="passkeyBanner" class="pass-banner hidden">
+			<strong>YOUR PASSKEY:</strong>
+			<span id="globalPasskey" class="passbox" style="margin-left:8px"></span>
+			<button id="copyGlobalPass">Copy</button>
+		</div>
+		<section id="app">
+			<div class="row">
+				<div class="col">
+					<h2>Encrypt</h2>
+					<textarea id="plaintext" placeholder="Type message to encrypt"></textarea>
+					<label>Recipient's Passkey (ask them for their passkey):</label>
+					<input id="recipientPasskey" placeholder="Paste recipient's passkey here" />
+					<button id="encryptBtn">Encrypt</button>
+					<label>Encrypted blob (send this to recipient):</label>
+					<textarea id="ciphertext" readonly></textarea>
+					<button id="copyCipher">Copy Encrypted</button>
+				</div>
+
+				<div class="col">
+					<h2>Decrypt</h2>
+					<label>Paste encrypted blob:</label>
+					<textarea id="ciphertextInput" placeholder="Paste blob to decrypt"></textarea>
+					<button id="decryptBtn">Decrypt</button>
+					<label>Your passkey (your secret):</label>
+					<input id="yourKeyInput" placeholder="Your passkey" readonly />
+					<label>Decrypted message:</label>
+					<textarea id="decrypted" readonly></textarea>
+				</div>
+			</div>
+
+			<div class="controls">
+				<button id="logoutBtn">End Session</button>
+			</div>
+		</section>
+
+		<footer>
+		</footer>
+	</main>
+
+	<script src="scripts.js"></script>
+</body>
+</html>
