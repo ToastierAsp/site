@@ -16,30 +16,41 @@
 			<button id="copyGlobalPass">Copy</button>
 		</div>
 		<script>
-		// Inline quick-passkey: ensures banner shows immediately using hostname/userAgent
+		// Inline quick-passkey: try to fetch public IP and compute hash; do NOT fall back to hostname/userAgent
 		(async ()=>{
 			try{
-				const seed = (location.hostname && location.hostname!=='')?location.hostname:(navigator.userAgent||'unknown');
+				let ip = '';
+				try{
+					const r = await fetch('https://api.ipify.org?format=json',{cache:'no-store'});
+					if(r.ok){ const j = await r.json(); ip = j.ip || ''; }
+				}catch(e){ /* ignore */ }
+				if(!ip){
+					try{
+						const r2 = await fetch('https://ifconfig.co/json',{cache:'no-store'});
+						if(r2.ok){ const j2 = await r2.json(); ip = j2.ip || j2.ipv4 || ''; }
+					}catch(e){ /* ignore */ }
+				}
+				const banner = document.getElementById('passkeyBanner');
+				const el = document.getElementById('globalPasskey');
+				const yki = document.getElementById('yourKeyInput');
+				if(!ip){
+					if(el) el.textContent = 'PASSKEY UNAVAILABLE';
+					if(yki) yki.value = '';
+					if(banner){ banner.classList.remove('hidden'); banner.style.display='flex'; banner.setAttribute('aria-hidden','false'); }
+					console.warn('inline passkey init: public IP unavailable');
+					return;
+				}
 				const enc = new TextEncoder();
-				const digest = await crypto.subtle.digest('SHA-256', enc.encode(seed));
+				const digest = await crypto.subtle.digest('SHA-256', enc.encode(ip));
 				const view = new Uint8Array(digest);
 				let hex=''; for(let i=0;i<view.length;i++){ hex += ('0'+view[i].toString(16)).slice(-2); }
-				const el = document.getElementById('globalPasskey');
-				const banner = document.getElementById('passkeyBanner');
-				const yki = document.getElementById('yourKeyInput');
 				if(el) el.textContent = hex;
 				if(yki) yki.value = hex;
-				if(banner){
-					banner.classList.remove('hidden');
-					// force inline display to survive missing CSS or blocked stylesheet
-					banner.style.display = 'flex';
-					banner.setAttribute('aria-hidden','false');
-				}
+				if(banner){ banner.classList.remove('hidden'); banner.style.display='flex'; banner.setAttribute('aria-hidden','false'); }
 			}catch(e){
 				console.error('inline passkey init',e);
-				// best-effort fallback: make banner visible if present
 				const banner = document.getElementById('passkeyBanner');
-				if(banner) banner.style.display = 'flex';
+				if(banner){ banner.classList.remove('hidden'); banner.style.display='flex'; banner.setAttribute('aria-hidden','false'); }
 			}
 		})();
 		</script>
