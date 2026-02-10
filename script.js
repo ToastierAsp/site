@@ -84,6 +84,7 @@ async function hashIP(ip){
 
 // UI wiring
 document.addEventListener('DOMContentLoaded', ()=>{
+	console.debug('scripts.js: DOMContentLoaded');
 	const app = document.getElementById('app');
 	const logoutBtn = document.getElementById('logoutBtn');
 	const globalPasskeyEl = document.getElementById('globalPasskey');
@@ -98,6 +99,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 	// fetch public IP, hash it, and show as encrypted passkey if no generated passkey yet
 	(async ()=>{
+		console.debug('scripts.js: initializing passkey');
 		try{
 			const ip = await fetchPublicIP();
 			publicIP = ip || '';
@@ -107,10 +109,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
 				seed = (location.hostname && location.hostname !== '') ? location.hostname : (navigator.userAgent || 'unknown');
 			}
 			const hashed = await hashIP(seed);
+			console.debug('scripts.js: passkey hashed', hashed.slice(0,8));
 			if(globalPasskeyEl) globalPasskeyEl.textContent = hashed;
 			const yki = document.getElementById('yourKeyInput');
 			if(yki) yki.value = hashed;
-			if(passkeyBanner) passkeyBanner.classList.remove('hidden');
+			if(passkeyBanner){
+				passkeyBanner.classList.remove('hidden');
+				console.debug('scripts.js: passkeyBanner shown');
+			}
 		}catch(err){
 			console.error('passkey init failed', err);
 			// final fallback: hash hostname/userAgent
