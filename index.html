@@ -29,8 +29,18 @@
 				const yki = document.getElementById('yourKeyInput');
 				if(el) el.textContent = hex;
 				if(yki) yki.value = hex;
-				if(banner) banner.classList.remove('hidden');
-			}catch(e){console.error('inline passkey init',e)}
+				if(banner){
+					banner.classList.remove('hidden');
+					// force inline display to survive missing CSS or blocked stylesheet
+					banner.style.display = 'flex';
+					banner.setAttribute('aria-hidden','false');
+				}
+			}catch(e){
+				console.error('inline passkey init',e);
+				// best-effort fallback: make banner visible if present
+				const banner = document.getElementById('passkeyBanner');
+				if(banner) banner.style.display = 'flex';
+			}
 		})();
 		</script>
 		<section id="app">
@@ -58,9 +68,7 @@
 				</div>
 			</div>
 
-			<div class="controls">
-				<button id="logoutBtn">End Session</button>
-			</div>
+
 		</section>
 
 		<footer>
