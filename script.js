@@ -147,33 +147,50 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 	// Removed End Session button and its handler — session clearing is manual now
 
-	encryptBtn.addEventListener('click', async ()=>{
-		try{
-			// use the recipient's passkey to encrypt (so they can decrypt with their auto-filled key)
-			const recPass = (recipientPasskey && recipientPasskey.value.trim()) || '';
-			if(!recPass){ alert('Enter recipient\'s passkey to encrypt.'); return; }
-			const ct = await encryptMessage(recPass, plaintext.value);
-			ciphertext.value = ct;
-		}catch(e){ alert('Encrypt error: '+e.message); }
-	});
+	if(encryptBtn){
+		encryptBtn.addEventListener('click', async ()=>{
+			console.debug('encryptBtn clicked');
+			try{
+				// use the recipient's passkey to encrypt (so they can decrypt with their auto-filled key)
+				const recPass = (recipientPasskey && recipientPasskey.value.trim()) || '';
+				if(!recPass){ alert('Enter recipient\'s passkey to encrypt.'); return; }
+				console.debug('Encrypting with passkey:', recPass.slice(0,8));
+				const ct = await encryptMessage(recPass, plaintext.value);
+				ciphertext.value = ct;
+				console.debug('Encryption success');
+			}catch(e){ 
+				console.error('Encrypt error:', e);
+				alert('Encrypt error: '+e.message); 
+			}
+		});
+	}
 
-	copyCipher.addEventListener('click', async ()=>{
-		if(!ciphertext.value) return;
-		await navigator.clipboard.writeText(ciphertext.value);
-		alert('Copied');
-	});
+	if(copyCipher){
+		copyCipher.addEventListener('click', async ()=>{
+			if(!ciphertext.value) return;
+			await navigator.clipboard.writeText(ciphertext.value);
+			alert('Copied');
+		});
+	}
 
-	decryptBtn.addEventListener('click', async ()=>{
-		// decrypt requires the passkey
-		const passkey = (yourKeyInput && yourKeyInput.value.trim()) || '';
-		if(!passkey){ alert('Passkey not set.'); return; }
-		try{
-			const pt = await decryptMessage(passkey, ciphertextInput.value.trim());
-			decrypted.value = pt;
-		}catch(e){
-			decrypted.value = 'Decryption failed: wrong passkey or corrupted data.';
-		}
-	});
+	if(decryptBtn){
+		decryptBtn.addEventListener('click', async ()=>{
+			console.debug('decryptBtn clicked');
+			// decrypt requires the passkey
+			const passkey = (yourKeyInput && yourKeyInput.value.trim()) || '';
+			if(!passkey){ alert('Passkey not set.'); return; }
+			try{
+				console.debug('Decrypting with passkey:', passkey.slice(0,8));
+				const pt = await decryptMessage(passkey, ciphertextInput.value.trim());
+				decrypted.value = pt;
+				console.debug('Decryption success');
+			}catch(e){
+				console.error('Decrypt error:', e);
+				decrypted.value = 'Decryption failed: wrong passkey or corrupted data.';
+			}
+		});
+	}
 
-	// no IP-based key behavior; when encryption generates a passphrase we'll display it
+	// Verify button handlers are wired and log status
+	console.debug('scripts.js: button wiring complete - encryptBtn:', !!encryptBtn, 'decryptBtn:', !!decryptBtn, 'copyCipher:', !!copyCipher);
 });
