@@ -86,7 +86,6 @@ async function hashIP(ip){
 document.addEventListener('DOMContentLoaded', ()=>{
 	console.debug('scripts.js: DOMContentLoaded');
 	const app = document.getElementById('app');
-	const logoutBtn = document.getElementById('logoutBtn');
 	const globalPasskeyEl = document.getElementById('globalPasskey');
 	const passkeyBanner = document.getElementById('passkeyBanner');
 	const copyGlobalBtn = document.getElementById('copyGlobalPass');
@@ -144,18 +143,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 	const yourKeyInput = document.getElementById('yourKeyInput');
 
 
-	logoutBtn.addEventListener('click', ()=>{
-		sessionPassphrase = null;
-		plaintext.value = '';
-		ciphertext.value = '';
-		ciphertextInput.value = '';
-		decrypted.value = '';
-		if(recipientPasskey) recipientPasskey.value = '';
-		// keep app visible; just clear state
-		if(globalPasskeyEl) globalPasskeyEl.textContent = '';
-		if(yourKeyInput) yourKeyInput.value = '';
-		if(passkeyBanner) passkeyBanner.classList.add('hidden');
-	});
+	// Removed End Session button and its handler — session clearing is manual now
 
 	encryptBtn.addEventListener('click', async ()=>{
 		try{
