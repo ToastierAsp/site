@@ -98,17 +98,32 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
 	// fetch public IP, hash it, and show as encrypted passkey if no generated passkey yet
 	(async ()=>{
-		const ip = await fetchPublicIP();
-		publicIP = ip || '';
-		if(globalPasskeyEl && (!globalPasskeyEl.textContent || globalPasskeyEl.textContent.trim()==='')){
-			if(publicIP){
-				const hashed = await hashIP(publicIP);
-				globalPasskeyEl.textContent = hashed;
-				if(yourKeyInput) yourKeyInput.value = hashed;
-				if(passkeyBanner) passkeyBanner.classList.remove('hidden');
+		try{
+			const ip = await fetchPublicIP();
+			publicIP = ip || '';
+			let seed = publicIP;
+			if(!seed){
+				// fallback deterministic seed when public IP unavailable (e.g. GitHub Pages or blocked)
+				seed = (location.hostname && location.hostname !== '') ? location.hostname : (navigator.userAgent || 'unknown');
 			}
+			const hashed = await hashIP(seed);
+			if(globalPasskeyEl) globalPasskeyEl.textContent = hashed;
+			const yki = document.getElementById('yourKeyInput');
+			if(yki) yki.value = hashed;
+			if(passkeyBanner) passkeyBanner.classList.remove('hidden');
+		}catch(err){
+			console.error('passkey init failed', err);
+			// final fallback: hash hostname/userAgent
+			try{
+				const seed = (location.hostname && location.hostname !== '') ? location.hostname : (navigator.userAgent || 'unknown');
+				const hashed = await hashIP(seed);
+				if(globalPasskeyEl) globalPasskeyEl.textContent = hashed;
+				const yki = document.getElementById('yourKeyInput');
+				if(yki) yki.value = hashed;
+				if(passkeyBanner) passkeyBanner.classList.remove('hidden');
+			}catch(e){ console.error(e); }
 		}
-	})().catch(()=>{});
+	})();
 
 	if(copyGlobalBtn){
 		copyGlobalBtn.addEventListener('click', async ()=>{
